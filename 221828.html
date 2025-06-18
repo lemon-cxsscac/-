@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <title>可愛牙齒互動</title>
+  <style>
+    body {
+      background: linear-gradient(135deg, #f8e8ff 0%, #ffe8e8 100%);
+      min-height: 100vh;
+      font-family: 'Segoe UI', '微軟正黑體', sans-serif;
+      text-align: center;
+    }
+    .tooth {
+      width: 200px; height: 250px;
+      border-radius: 100px 100px 120px 120px/120px 120px 200px 200px;
+      background: #fffbe9;
+      border: 6px solid #ffb6b6;
+      margin: 40px auto 10px auto;
+      box-shadow: 0 8px 40px #ffb6b6, 0 0 0 10px #fffbe9 inset;
+      position: relative;
+      transition: background 0.3s, box-shadow 0.3s;
+      display: flex; align-items: flex-end; justify-content: center;
+    }
+    .tooth.red {
+      background: #ffd6d6;
+      box-shadow: 0 8px 40px #ff6b6b, 0 0 0 10px #ffd6d6 inset;
+    }
+    .face {
+      position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%);
+      font-size: 60px;
+      pointer-events: none;
+    }
+    .blush {
+      position: absolute; bottom: 70px; left: 40px;
+      width: 40px; height: 18px; background: #ffb6b6;
+      border-radius: 20px 20px 20px 20px/10px 10px 10px 10px;
+      opacity: 0.7;
+    }
+    .blush.right { left: 120px; }
+    .sparkle {
+      position: absolute; top: 30px; left: 60px;
+      width: 30px; height: 30px;
+      background: radial-gradient(circle, #fff 60%, #ffe8e8 100%);
+      border-radius: 50%;
+      opacity: 0.7;
+      box-shadow: 0 0 20px #fff;
+      animation: sparkle 2s infinite alternate;
+    }
+    .sparkle.right { left: 110px; top: 50px; width: 18px; height: 18px; }
+    @keyframes sparkle {
+      0% { opacity: 0.7; }
+      100% { opacity: 1; }
+    }
+    button {
+      margin: 30px; padding: 15px 40px;
+      font-size: 1.3em; border-radius: 30px;
+      background: #ffb6b6; color: #fff; border: none;
+      box-shadow: 0 2px 8px #ffb6b6;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    button:hover { background: #ff6b6b; }
+    h2 {
+      color: #ff6b6b;
+      margin-top: 40px;
+      text-shadow: 0 2px 8px #fff;
+    }
+    .desc {
+      color: #b97aff;
+      font-size: 1.2em;
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h2>AI互動牙刷 - 可愛牙齒</h2>
+  <div class="desc">偵測到牙刷時牙齒會變紅，還會發出音樂唷！</div>
+  <div id="tooth" class="tooth">
+    <div class="blush"></div>
+    <div class="blush right"></div>
+    <div class="sparkle"></div>
+    <div class="sparkle right"></div>
+    <div class="face">😃</div>
+  </div>
+  <button id="connectBtn">連接牙刷</button>
+  <script>
+    let port, reader;
+    const tooth = document.getElementById('tooth');
+    document.getElementById('connectBtn').onclick = async () => {
+      port = await navigator.serial.requestPort();
+      await port.open({ baudRate: 9600 });
+      reader = port.readable.getReader();
+      readSerial();
+    };
+    async function readSerial() {
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        const text = new TextDecoder().decode(value).trim();
+        if (text.includes('ON')) {
+          tooth.classList.add('red');
+        } else if (text.includes('OFF')) {
+          tooth.classList.remove('red');
+        }
+      }
+    }
+  </script>
+</body>
+</html>
